@@ -68,9 +68,13 @@ int main(int argc, char **argv) {
 
     SKConfig skc;
     SKWrapper skw(skc);
-    //SKPRAprilTag skpra("RGB1080p", "apriltag", "tagcorners", true);
-    SKPFaceDetector spfd;
+    // SKPRAprilTag skpra("RGB1080p", "apriltag", "tagcorners", true);
+    SKPFaceDetector spfd(skw);
     SKPVideoDisplay skpVideoDisplay("face_detections");
+    // SKPVideoDisplay skpVideoDisplay("apriltag");
+
+    // skw.addRecipient(&skpra);
+    // spfd.addRecipient(&skpVideoDisplay);
 
     skw.addRecipient(&spfd);
     spfd.addRecipient(&skpVideoDisplay);
