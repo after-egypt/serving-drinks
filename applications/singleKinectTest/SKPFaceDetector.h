@@ -4,10 +4,13 @@
 #include "SKPRecipient.h"
 #include "SKWrapper.h"
 #include <python3.6/Python.h>
+#include <k4a/k4atypes.h>
 #include <k4abt.hpp>
 #include <vector>
 
 class SKPacket;
+
+const std::chrono::milliseconds TIMEOUT(K4A_WAIT_INFINITE);
 
 class SKPFaceDetector : public SKPRecipient {
 public:
@@ -19,7 +22,6 @@ public:
     void getTargetEncoding(SKPacket& skp);
 
 protected:
-    static std::chrono::milliseconds TIMEOUT(K4A_WAIT_INFINITE);
     std::vector<SKPRecipient*> _recipients;
     PyObject* person_find;
     PyObject* get_encoding;
@@ -27,7 +29,7 @@ protected:
     PyObject* target_encoding;
     bool found_target;
     int target_id;
-    float3_t target_pos;
+    k4a_float3_t target_pos;
     k4abt::tracker tracker;
 };
 

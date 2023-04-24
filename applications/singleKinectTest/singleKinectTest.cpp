@@ -1,5 +1,4 @@
 #include "SKConfig.h"
-#include "SKPRAprilTag.h"
 #include "SKPFaceDetector.h"
 #include "SKPVideoDisplay.h"
 #include "SKWrapper.h"

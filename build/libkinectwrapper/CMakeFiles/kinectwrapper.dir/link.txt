@@ -1,0 +1,2 @@
+/usr/bin/ar qc libkinectwrapper.a  CMakeFiles/kinectwrapper.dir/src/SKConfig.cpp.o CMakeFiles/kinectwrapper.dir/src/SKPacket.cpp.o CMakeFiles/kinectwrapper.dir/src/SKPVideoDisplay.cpp.o CMakeFiles/kinectwrapper.dir/src/SKWrapper.cpp.o
+/usr/bin/ranlib libkinectwrapper.a
