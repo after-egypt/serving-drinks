@@ -22,7 +22,6 @@ include_directories(
     ${GTK3_INCLUDE_DIRS}
     ${CAIRO_INCLUDE_DIRS}
     ${VISION_GEOMETRY_INCLUDE_DIRS}
-    ${APRIL_TAG_INCLUDE_DIRS}
     ${EIGEN3_INCLUDE_DIR}
     ${OpenCV_INCLUDE_DIRS}
     ${Boost_INCLUDE_DIRS}
@@ -31,7 +30,6 @@ include_directories(
 SET(LIB_KINECT_WRAPPER_SRC
     src/SKConfig.cpp
     src/SKPacket.cpp
-    src/SKPRAprilTag.cpp
     src/SKPVideoDisplay.cpp
     src/SKWrapper.cpp
 )

@@ -45,7 +45,6 @@ target_link_libraries(singleKinectTest kinectwrapper
     k4abt
     k4arecord
     pthread
-    apriltag
     #vision_geometry
     GL
     GLU
