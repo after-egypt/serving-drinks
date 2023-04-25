@@ -110,33 +110,33 @@ void SKPFaceDetector::find3DTargetPose(SKPacket& skp) {
 
 
 void SKPFaceDetector::receiveFrame(SKPacket &skp) {
-    if (!found_target) {
-        findTargetId(skp);
-    } else {
-        find3DTargetPose(skp);
-    }
-    
-    // cv::Mat &inMat = skp.getCVMat("RGB1080p");
-    // skp.allocateCVMat(inMat.rows, inMat.cols, CV_8UC3, "face_detections");
-    // cv::Mat &faceMat = skp.getCVMat("face_detections");
-
-    // cv::cvtColor(faceMat, faceMat, cv::COLOR_BGR2RGB);
-    // npy_intp dims[3] = {faceMat.rows, faceMat.cols, faceMat.channels()};
-    // PyObject* numpy_array = PyArray_SimpleNewFromData(3, dims, NPY_UINT8, faceMat.data);
-    // target_encoding = PyObject_CallFunctionObjArgs(get_encoding, numpy_array, nullptr);
-
-    // target_encoding = (double*) PyArray_DATA(target_encoding);
-    // encoding_length = PyArray_DIMS(numpy_array)[0];
-
-    // for (int i = 0; i < encoding_length; i++) {
-    //     cout << target_encoding[i] << " ";
+    // if (!found_target) {
+    //     findTargetId(skp);
+    // } else {
+    //     find3DTargetPose(skp);
     // }
-    // cout << endl;
+    
+    cv::Mat &inMat = skp.getCVMat("RGB1080p");
+    skp.allocateCVMat(inMat.rows, inMat.cols, CV_8UC3, "face_detections");
+    cv::Mat &faceMat = skp.getCVMat("face_detections");
+
+    cv::cvtColor(faceMat, faceMat, cv::COLOR_BGR2RGB);
+    npy_intp dims[3] = {faceMat.rows, faceMat.cols, faceMat.channels()};
+    PyObject* numpy_array = PyArray_SimpleNewFromData(3, dims, NPY_UINT8, faceMat.data);
+    PyObject* in_enc = PyObject_CallFunctionObjArgs(in_enc, numpy_array, nullptr);
+    cout << "before" << endl;
+    double* enc = (double*) PyArray_DATA(in_enc);
+    int encoding_length = PyArray_DIMS(numpy_array)[0];
+
+    cout << encoding_length << endl;
+    for (int i = 0; i < encoding_length; i++) {
+        cout << enc[i] << " ";
+    }
+    cout << endl;
 
 
 
     // // inMat.copyTo(faceMat);
-
 
     for(size_t i = 0; i < _recipients.size(); i++) {
         _recipients[i]->receiveFrame(skp);
