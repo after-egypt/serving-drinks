@@ -69,25 +69,29 @@ int main(int argc, char **argv) {
     SKWrapper skw(skc);
     // SKPRAprilTag skpra("RGB1080p", "apriltag", "tagcorners", true);
     SKPFaceDetector spfd(skw);
-    SKPVideoDisplay skpVideoDisplay("face_detections");
+    // SKPVideoDisplay skpVideoDisplay("face_detections");
     // SKPVideoDisplay skpVideoDisplay("apriltag");
 
     // skw.addRecipient(&skpra);
     // spfd.addRecipient(&skpVideoDisplay);
 
     skw.addRecipient(&spfd);
-    spfd.addRecipient(&skpVideoDisplay);
+    // spfd.addRecipient(&skpVideoDisplay);
 
-    GtkApplication *app = gtk_application_new ("org.gtk.example", G_APPLICATION_FLAGS_NONE);
-    g_signal_connect (app, "activate", G_CALLBACK (buildUI), &skpVideoDisplay);
+    while (true) {
+        skw.doOnce();
+    }
 
-    pthread_t thread;
-    pthread_create(&thread, NULL, skwThread, &skw);
+    // GtkApplication *app = gtk_application_new ("org.gtk.example", G_APPLICATION_FLAGS_NONE);
+    // g_signal_connect (app, "activate", G_CALLBACK (buildUI), &skpVideoDisplay);
 
-    int status = g_application_run (G_APPLICATION (app), 0, argv);
-    g_object_unref (app);
+    // pthread_t thread;
+    // pthread_create(&thread, NULL, skwThread, &skw);
 
-    pthread_join(thread, NULL);
+    // int status = g_application_run (G_APPLICATION (app), 0, argv);
+    // g_object_unref (app);
+
+    // pthread_join(thread, NULL);
 
     return 0;
 }
