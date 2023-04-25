@@ -1,7 +1,11 @@
 import face_recognition
+import numpy as np
 
 def get_encoding(image):
-    return face_recognition.face_encodings(image)[0]
+    encodings = face_recognition.face_encodings(image)
+    if (len(encodings) == 0):
+        return np.zeros(shape=(0, 0))
+    return encodings[0]
 
 def find_person(image, original_encoding):
     loc = face_recognition.face_locations(image)

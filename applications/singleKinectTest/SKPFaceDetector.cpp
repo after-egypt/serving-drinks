@@ -11,7 +11,7 @@ using namespace std;
 
 // #include <opencv2/opencv.hpp>
 
-SKPFaceDetector::SKPFaceDetector(SKWrapper& skw) : _recipients(), found_target(false) {
+SKPFaceDetector::SKPFaceDetector(SKWrapper& skw) : _recipients(), chose_target(false), found_target(false) {
     Py_Initialize();
     person_find = PyImport_ImportModule("person_find");
     cout << person_find << endl;
@@ -44,9 +44,11 @@ void SKPFaceDetector::getTargetEncoding(SKPacket& skp) {
 }
 
 void SKPFaceDetector::findTargetId(SKPacket& skp) {
+    cout << "trying to find target id" << endl;
     cv::Mat &inMat = skp.getCVMat("RGB1080p");
     skp.allocateCVMat(inMat.rows, inMat.cols, CV_8UC3, "face_detections");
-    cv::Mat &scene = skp.getCVMat("face_detections");
+    skp.copyCVMat("RGB1080p", "face_detections");
+    cv::Mat scene = skp.getCVMat("face_detections");
 
     cv::cvtColor(scene, scene, cv::COLOR_BGR2RGB);
     npy_intp scene_dims[3] = {scene.rows, scene.cols, scene.channels()};
@@ -61,8 +63,10 @@ void SKPFaceDetector::findTargetId(SKPacket& skp) {
     Py_DECREF(first);
     Py_DECREF(second);
 
-    if (x == -1 && y == -1)
+    if (x == -1 && y == -1) {
+        cout << "could not find target in frame" << endl;
         return;
+    }
     
     k4a::capture cap = skp.getCapture();
     k4a::image depth_image = cap.get_depth_image();
@@ -90,10 +94,13 @@ void SKPFaceDetector::findTargetId(SKPacket& skp) {
     }
     target_id = frame.get_body_id(minIdx);
     found_target = true;
-    // cout << point_3d.xyz.x << point_3d.xyz.y << point_3d.xyz.z;
+
+    cout << "id = " << target_id << endl;
+
 }
 
 void SKPFaceDetector::find3DTargetPose(SKPacket& skp) {
+    cout << "trying to find target 3d position" << endl;
     tracker.enqueue_capture(skp.getCapture(), TIMEOUT);
     k4abt::frame frame = tracker.pop_result(TIMEOUT);
     int targetIdx = -1;
@@ -103,41 +110,56 @@ void SKPFaceDetector::find3DTargetPose(SKPacket& skp) {
             break;
         }
     }
-    if (targetIdx == -1)
+    if (targetIdx == -1) {
+        cout << "target is not in image" << endl;
         return;
+    }
     target_pos = frame.get_body_skeleton(targetIdx).joints[K4ABT_JOINT_NOSE].position;
+    cout << "person is at (" << target_pos.xyz.x << ", " << target_pos.xyz.x << ", " << target_pos.xyz.x << ")" << endl;
+}
+
+void SKPFaceDetector::chooseTarget(SKPacket& skp) {
+    cout << "trying to choose target" << endl;
+    cv::Mat &inMat = skp.getCVMat("RGB1080p");
+    skp.allocateCVMat(inMat.rows, inMat.cols, CV_8UC3, "face_detections");
+    skp.copyCVMat("RGB1080p", "face_detections");
+    cv::Mat bgrMat = skp.getCVMat("face_detections");
+    cv::Mat faceMat;
+
+    cv::cvtColor(bgrMat, faceMat, cv::COLOR_BGR2RGB);
+    npy_intp dims[3] = {faceMat.rows, faceMat.cols, faceMat.channels()};
+    PyObject* numpy_array = PyArray_SimpleNewFromData(3, dims, NPY_UINT8, faceMat.data);
+    target_encoding = PyObject_CallFunctionObjArgs(get_encoding, numpy_array, nullptr);
+    int encoding_length = PyArray_DIM(target_encoding, 0);
+    if (encoding_length == 0) {
+        cout << "could not find any faces" << endl;
+        return;
+    }
+    cout << "found face, encoding = ";
+    double* enc = (double*) PyArray_DATA(target_encoding);
+    for (int i = 0; i < encoding_length; i++) {
+        cout << enc[i] << " ";
+    }
+    cout << endl;
+
+    chose_target = true;
 }
 
 
 void SKPFaceDetector::receiveFrame(SKPacket &skp) {
+    if (!chose_target) {
+        chooseTarget(skp);
+    } else if (!found_target) {
+        findTargetId(skp);
+    } else {
+        find3DTargetPose(skp);
+    }
     // if (!found_target) {
     //     findTargetId(skp);
     // } else {
     //     find3DTargetPose(skp);
     // }
     
-    cv::Mat &inMat = skp.getCVMat("RGB1080p");
-    skp.allocateCVMat(inMat.rows, inMat.cols, CV_8UC3, "face_detections");
-    cv::Mat &faceMat = skp.getCVMat("face_detections");
-
-    cv::cvtColor(faceMat, faceMat, cv::COLOR_BGR2RGB);
-    npy_intp dims[3] = {faceMat.rows, faceMat.cols, faceMat.channels()};
-    PyObject* numpy_array = PyArray_SimpleNewFromData(3, dims, NPY_UINT8, faceMat.data);
-    PyObject* in_enc = PyObject_CallFunctionObjArgs(in_enc, numpy_array, nullptr);
-    cout << "before" << endl;
-    double* enc = (double*) PyArray_DATA(in_enc);
-    int encoding_length = PyArray_DIMS(numpy_array)[0];
-
-    cout << encoding_length << endl;
-    for (int i = 0; i < encoding_length; i++) {
-        cout << enc[i] << " ";
-    }
-    cout << endl;
-
-
-
-    // // inMat.copyTo(faceMat);
-
     for(size_t i = 0; i < _recipients.size(); i++) {
         _recipients[i]->receiveFrame(skp);
     }
