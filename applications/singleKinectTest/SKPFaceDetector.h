@@ -19,6 +19,7 @@ public:
     void addRecipient(SKPRecipient *skpr);
     void findTargetId(SKPacket& skp);
     void find3DTargetPose(SKPacket& skp);
+    void chooseTarget(SKPacket& skp);
     void getTargetEncoding(SKPacket& skp);
 
 protected:
@@ -27,6 +28,7 @@ protected:
     PyObject* get_encoding;
     PyObject* find_person;
     PyObject* target_encoding;
+    bool chose_target;
     bool found_target;
     int target_id;
     k4a_float3_t target_pos;
